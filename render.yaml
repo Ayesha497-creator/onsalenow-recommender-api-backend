@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: flask-recommender-api
+    runtime: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PORT
+        value: 10000
+    plan: free
