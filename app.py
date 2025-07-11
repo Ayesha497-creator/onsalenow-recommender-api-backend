@@ -11,20 +11,21 @@ app = Flask(__name__)
 CORS(app)
 
 def load_and_prepare_data():
-    # ✅ Load local CSV file (NOT from Google Drive anymore)
-    df = pd.read_csv("https://media.githubusercontent.com/media/Ayesha497-creator/onsalenow-recommender-api-backend/refs/heads/main/myntra_products_catalog.csv")
+    # ✅ Using small, clean online dataset
+    CSV_URL = "https://raw.githubusercontent.com/shopifypartners/product-csvs/master/apparel.csv"
+    df = pd.read_csv(CSV_URL)
 
-    
+    # Rename and clean columns
     df = df.rename(columns={
-        'ProductID': 'product_id',
-        'ProductName': 'productname',
-        'ProductBrand': 'productbrand',
-        'Gender': 'gender',
-        'Price (INR)': 'price',
-        'PrimaryColor': 'primary_color'
+        'Handle': 'product_id',
+        'Title': 'productname',
+        'Vendor': 'productbrand',
+        'Variant Price': 'price',
     })
-    
-    df = df[['product_id', 'productname', 'productbrand', 'gender', 'price', 'primary_color']].dropna()
+
+    df = df[['product_id', 'productname', 'productbrand', 'price']].dropna()
+    df['gender'] = np.random.choice(['Men', 'Women'], size=len(df))
+    df['primary_color'] = np.random.choice(['Red', 'Blue', 'Black', 'White'], size=len(df))
     df['price'] = pd.to_numeric(df['price'], errors='coerce')
     df.dropna(inplace=True)
 
