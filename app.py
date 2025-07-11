@@ -11,7 +11,9 @@ app = Flask(__name__)
 CORS(app)
 
 def load_and_prepare_data():
-    df = pd.read_csv("https://drive.google.com/uc?id=1jVmVG960OoBLxewXtJ9tleU_HF4_jKBY")
+    # ✅ Load local CSV file (NOT from Google Drive anymore)
+    df = pd.read_csv("myntra_products_catalog.csv")
+    
     df = df.rename(columns={
         'ProductID': 'product_id',
         'ProductName': 'productname',
@@ -20,9 +22,11 @@ def load_and_prepare_data():
         'Price (INR)': 'price',
         'PrimaryColor': 'primary_color'
     })
+    
     df = df[['product_id', 'productname', 'productbrand', 'gender', 'price', 'primary_color']].dropna()
     df['price'] = pd.to_numeric(df['price'], errors='coerce')
     df.dropna(inplace=True)
+
     df['is_sale'] = np.random.choice([True, False], size=len(df), p=[0.6, 0.4])
     df['discount_price'] = df.apply(
         lambda row: row['price'] * np.random.uniform(0.5, 0.9) if row['is_sale'] else row['price'], axis=1)
