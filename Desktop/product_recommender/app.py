@@ -1,25 +1,15 @@
-# app.py
-
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pandas as pd
-from fastapi import FastAPI, Query
-from fastapi.middleware.cors import CORSMiddleware
+import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
-# ✅ Initialize FastAPI app
-app = FastAPI(title="🛍️ On Sale Product Recommender")
-
-# ✅ Enable CORS for frontend access
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all for now (for React/Vue etc.)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ✅ Initialize Flask App
+app = Flask(__name__)
+CORS(app)  # Enable CORS
 
 # ✅ Load & Prepare Dataset
 df = pd.read_csv("https://drive.google.com/uc?id=1jVmVG960OoBLxewXtJ9tleU_HF4_jKBY")
@@ -59,10 +49,16 @@ scaled = StandardScaler().fit_transform(features)
 kmeans = KMeans(n_clusters=5, random_state=42, n_init=10)
 df['cluster'] = kmeans.fit_predict(scaled)
 
-# ✅ Recommendation API
-@app.get("/recommend")
-def recommend_products(keyword: str = Query(..., description="Search by keyword")):
-    keyword = keyword.lower().strip()
+# ✅ Home Route for Testing
+@app.route("/")
+def home():
+    return "<h2>🛍️ Welcome to the Product Recommendation API!<br>Try <code>/recommend?keyword=bag</code> in the URL.</h2>"
+
+# ✅ Recommendation Route
+@app.route('/recommend', methods=['GET'])
+def recommend():
+    keyword = request.args.get('keyword', '').lower().strip()
+
     matched_products = df[df['text'].str.lower().str.contains(keyword)]
 
     if matched_products.empty:
@@ -75,7 +71,6 @@ def recommend_products(keyword: str = Query(..., description="Search by keyword"
 
     idx = matched_product.name
     gender_target = matched_product['gender'].lower()
-
     recs = []
 
     # 🔹 Content-Based Recommendations
@@ -110,7 +105,7 @@ def recommend_products(keyword: str = Query(..., description="Search by keyword"
                 "original_price": int(row['price'])
             })
 
-    return {
+    return jsonify({
         "search_keyword": keyword,
         "matched_product": {
             "product": matched_product['productname'],
@@ -119,4 +114,8 @@ def recommend_products(keyword: str = Query(..., description="Search by keyword"
             "discount_price": int(matched_product['discount_price']),
         },
         "recommendations": recs
-    }
+    })
+
+# ✅ Run the app
+if __name__ == '__main__':
+    app.run(debug=True)

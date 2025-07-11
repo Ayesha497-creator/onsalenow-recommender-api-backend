@@ -1,6 +1,5 @@
-fastapi
-uvicorn
+flask
+flask-cors
 scikit-learn
 pandas
 numpy
-python-multipart
