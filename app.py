@@ -12,7 +12,8 @@ CORS(app)
 
 def load_and_prepare_data():
     # ✅ Load local CSV file (NOT from Google Drive anymore)
-    df = pd.read_csv("myntra_products_catalog.csv")
+    df = pd.read_csv("https://media.githubusercontent.com/media/Ayesha497-creator/onsalenow-recommender-api-backend/refs/heads/main/myntra_products_catalog.csv")
+
     
     df = df.rename(columns={
         'ProductID': 'product_id',
